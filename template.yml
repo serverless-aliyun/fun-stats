@@ -1,0 +1,24 @@
+ROSTemplateFormatVersion: "2015-09-01"
+Transform: "Aliyun::Serverless-2018-04-03"
+Resources:
+  stats:
+    Type: "Aliyun::Serverless::Service"
+    Properties:
+      Description: "statistics for serverless functions"
+    index:
+      Type: "Aliyun::Serverless::Function"
+      Properties:
+        Handler: main
+        Runtime: custom
+        CodeUri: "./artifact"
+        EnvironmentVariables:
+          "GIN_MODE": "release"
+          "REGION_ID": "TPL_REGION_ID"
+          "ACCESS_KEY_ID": "TPL_ACCESS_KEY_ID"
+          "ACCESS_KEY_SECRET": "TPL_ACCESS_KEY_SECRET"
+      Events:
+        httpTrigger:
+          Type: HTTP
+          Properties:
+            AuthType: ANONYMOUS
+            Methods: ["GET"]
