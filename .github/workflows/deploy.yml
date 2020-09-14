@@ -1,0 +1,66 @@
+name: Function Deploy
+
+on:
+  push:
+    tags:
+      - "*"
+    paths:
+      - "*.go"
+      - "go.mod"
+      - "go.sum"
+      - "template.yml"
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+
+      - name: Build Bootstrap
+        run: go build -o bootstrap
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: fun-artifact
+          path: |
+            bootstrap
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: fun-artifact
+          path: artifact
+
+      - name: Setup Funcraft
+        run: |
+          sudo npm install @alicloud/fun -g
+          mkdir -p ~/.fcli && echo "$FUNCRAFT_CONFIG_YML" > ~/.fcli/config.yaml
+        env:
+          FUNCRAFT_CONFIG_YML: ${{ secrets.FUNCRAFT_CONFIG_YML }}
+
+      - name: Fix bootstrap permission
+        run: chmod +x artifact/bootstrap
+
+      - name: Replace environment variable
+        run: |
+          sed -i "s/TPL_REGION_ID/$ALIYUN_REGION_ID/g" template.yml
+          sed -i "s/TPL_ACCESS_KEY_ID/$ALIYUN_ACCESS_KEY_ID/g" template.yml
+          sed -i "s/TPL_ACCESS_KEY_SECRET/$ALIYUN_ACCESS_KEY_SECRET/g" template.yml
+        env:
+          ALIYUN_REGION_ID: ${{ secrets.ALIYUN_REGION_ID }}
+          ALIYUN_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          ALIYUN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+
+      - name: Deploy
+        run: fun deploy -y
+        env:
+          TIMEOUT: ${{ secrets.FUNCRAFT_TIMEOUT }}
+          RETRIES: ${{ secrets.FUNCRAFT_RETRIES }}
