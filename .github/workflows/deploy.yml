@@ -5,8 +5,9 @@ on:
     tags:
       - "*"
     paths:
-      - "slate/**"
-      - "main.go"
+      - "*.go"
+      - "go.mod"
+      - "go.sum"
       - "template.yml"
 
 jobs:
