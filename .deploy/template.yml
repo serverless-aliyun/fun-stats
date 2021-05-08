@@ -10,10 +10,10 @@ Resources:
       Properties:
         Handler: main
         Runtime: custom
-        CodeUri: "./artifact"
+        CodeUri: "./"
         EnvironmentVariables:
           "GIN_MODE": "release"
-          "REGION_ID": "TPL_REGION_ID"
+          "REGION_ID": "cn-hangzhou"
           "ACCESS_KEY_ID": "TPL_ACCESS_KEY_ID"
           "ACCESS_KEY_SECRET": "TPL_ACCESS_KEY_SECRET"
       Events:
